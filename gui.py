@@ -1,23 +1,25 @@
 import tkinter as tk
-from tkinter import messagebox
-from core import generate_password
+from core import generate_password, get_temp_email
 
-def get_new_pass():
-    password = generate_password()
-    entry_pass.delete(0, tk.END)
-    entry_pass.insert(0, password)
+def update_fields():
+    pass_entry.delete(0, tk.END)
+    pass_entry.insert(0, generate_password())
+    
+    email_entry.delete(0, tk.END)
+    email_entry.insert(0, get_temp_email())
 
-root = tk.Tk()
-root.title("EphemeralKey Desktop")
-root.geometry("300x200")
+app = tk.Tk()
+app.title("EphemeralKey v1.0")
+app.geometry("400x250")
 
-label = tk.Label(root, text="Tu Llave Segura:", pady=10)
-label.pack()
+tk.Label(app, text="Contraseña Segura:").pack(pady=5)
+pass_entry = tk.Entry(app, width=40)
+pass_entry.pack()
 
-entry_pass = tk.Entry(root, font=("Arial", 12), width=25)
-entry_pass.pack(pady=5)
+tk.Label(app, text="Correo Temporal:").pack(pady=5)
+email_entry = tk.Entry(app, width=40)
+email_entry.pack()
 
-btn_gen = tk.Button(root, text="Generar Nueva", command=get_new_pass, bg="#2ecc71", fg="white")
-btn_gen.pack(pady=20)
+tk.Button(app, text="Generar Todo", command=update_fields, bg="#3498db", fg="white").pack(pady=20)
 
-root.mainloop()
+app.mainloop()
