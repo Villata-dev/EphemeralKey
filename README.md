@@ -1,4 +1,4 @@
-# 🛡️ EphemeralKey
+# 🔑 EphemeralKey
 
 **EphemeralKey** es una herramienta integral de ciberseguridad diseñada para proteger la privacidad digital de los usuarios. Permite la generación de contraseñas de alta robustez y la creación de bandejas de correo electrónico temporales para evitar el spam y el rastreo en registros de sitios web.
 
