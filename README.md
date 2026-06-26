@@ -1,79 +1,132 @@
-# 🔑 EphemeralKey
+# EphemeralKey: Suite de Gestión de Identidad y Credenciales
 
-**EphemeralKey** es una herramienta integral de ciberseguridad diseñada para proteger la privacidad digital de los usuarios. Permite la generación de contraseñas de alta robustez y la creación de bandejas de correo electrónico temporales para evitar el spam y el rastreo en registros de sitios web.
+**EphemeralKey** es una aplicación híbrida de ciberseguridad diseñada para la generación de credenciales criptográficamente seguras y la administración de direcciones de correo electrónico desechables. El sistema implementa características avanzadas de seguridad operativa (OpSec) para mitigar el rastreo y la exposición de datos durante el registro en plataformas de terceros.
 
-Este proyecto destaca por ser una solución **híbrida**, ofreciendo tanto una interfaz web moderna como una aplicación de escritorio ligera.
-
----
-
-## 🚀 Características Principales
-
-* **Generador de Contraseñas Pro:** Algoritmos basados en la librería `secrets` de Python para asegurar aleatoriedad criptográficamente fuerte.
-* **Correos Temporales Reales:** Integración con la API de 1secmail para generar direcciones de correo funcionales y revisar la bandeja de entrada en tiempo real.
-* **Doble Interfaz:**
-    * **Web:** Desarrollada con Flask, ideal para despliegues en la nube (como Render o Heroku).
-    * **Escritorio:** Desarrollada con Tkinter, para uso local rápido y privado.
-* **Seguridad:** Implementación de variables de entorno y manejo de dependencias profesional.
+El proyecto presenta una arquitectura de despliegue dual, ofreciendo un cliente de escritorio nativo para entornos locales aislados y una interfaz web basada en API REST para despliegues en red.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## Características Arquitectónicas y de Seguridad
 
-* **Lenguaje:** Python 3.x
-* **Framework Web:** Flask
-* **Interfaz de Escritorio:** Tkinter
-* **Peticiones API:** Requests
-* **Estilos:** CSS3 (Glassmorphism UI) y HTML5
+- **Motor Criptográfico**
+  - Generación de contraseñas de alta entropía utilizando el módulo `secrets` de Python, garantizando un nivel de aleatoriedad resistente a ataques de fuerza bruta.
+
+- **Análisis Heurístico en Tiempo Real**
+  - Evaluación dinámica de la fuerza de la contraseña mediante cálculos de entropía de Shannon vinculados a eventos de teclado, proporcionando métricas de seguridad precisas.
+
+- **Monitorización Asíncrona de Bandeja de Entrada**
+  - Integración con la API REST de **1secmail** para el aprovisionamiento de buzones efímeros.
+  - Utiliza hilos de ejecución (`threading`) para el sondeo y recuperación de mensajes entrantes sin bloquear el proceso principal.
+
+- **Protocolos OpSec (Seguridad Operativa)**
+  - **Anti-Hijacking:** purgado automático del portapapeles tras **15 segundos** para prevenir la lectura no autorizada por malware residente.
+  - **Exportación Local:** almacenamiento temporal de identidades efímeras en archivos locales.
+
+- **Arquitectura de Interfaz Dual**
+  - **Desktop Client:** desarrollado con `customtkinter`, ofreciendo una interfaz moderna y optimizada para operaciones locales.
+  - **Web Suite:** servidor **Flask** que expone una API REST consumida por un frontend asíncrono con diseño **Glassmorphism**.
 
 ---
 
-## 📂 Estructura del Proyecto
+# Stack Tecnológico
 
-* `app.py`: Servidor Flask para la versión web.
-* `gui.py`: Interfaz gráfica para la versión de escritorio.
-* `core.py`: Lógica central del sistema (generación de claves y conexión con APIs).
-* `static/`: Archivos CSS y JavaScript para la web.
-* `templates/`: Plantillas HTML.
-* `requirements.txt`: Dependencias necesarias para el funcionamiento.
+| Categoría | Tecnología |
+|-----------|------------|
+| Lenguaje Core | Python 3.x |
+| Concurrencia | `threading` |
+| Backend | Flask (API REST) |
+| Frontend Desktop | CustomTkinter |
+| Frontend Web | HTML5, CSS3, JavaScript (Fetch API) |
+| Integración de Red | requests |
 
 ---
 
-## 💻 Instalación y Ejecución
+# Estructura del Repositorio
 
-### 1. Clonar el repositorio
+```text
+EphemeralKey/
+│
+├── app.py                  # Servidor Flask y endpoints REST
+├── gui.py                  # Cliente de escritorio
+├── templates/
+│   └── index.html          # Interfaz web
+├── requirements.txt        # Dependencias del proyecto
+└── README.md
+```
+
+> **Nota:** Los módulos de generación y conexión fueron encapsulados directamente en las interfaces para optimizar los flujos de ejecución de la versión actual.
+
+---
+
+# Instalación
+
+## 1. Clonar el repositorio
+
 ```bash
-git clone [https://github.com/Villata-dev/EphemeralKey.git](https://github.com/Villata-dev/EphemeralKey.git)
+git clone https://github.com/Villata-dev/EphemeralKey.git
 cd EphemeralKey
-2. Instalar Dependencias
-Se recomienda utilizar un entorno virtual para mantener la limpieza del sistema:
+```
 
-Bash
-# Crear el entorno virtual
+---
+
+## 2. Crear un entorno virtual
+
+Se recomienda utilizar un entorno virtual para aislar las dependencias del proyecto.
+
+### Windows
+
+```bash
 python -m venv venv
-
-# Activar el entorno
-# En Windows:
 venv\Scripts\activate
-# En macOS/Linux:
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv venv
 source venv/bin/activate
+```
 
-# Instalar librerías
+---
+
+## 3. Instalar dependencias
+
+```bash
 pip install -r requirements.txt
-3. Ejecutar la Versión Web (Opción B)
-Bash
-python app.py
-La aplicación estará disponible por defecto en http://127.0.0.1:5000
+```
 
-4. Ejecutar la Versión Escritorio (Opción A)
-Bash
+---
+
+# Ejecución
+
+## Cliente de Escritorio
+
+Ejecuta la interfaz gráfica con las funciones de seguridad a nivel de sistema.
+
+```bash
 python gui.py
-⚙️ ¿Cómo funciona?
-Generación de Llaves
-El sistema utiliza el módulo secrets de Python, que genera caracteres aleatorios seguros para aplicaciones de seguridad, proporcionando una resistencia superior frente a ataques de fuerza bruta en comparación con el módulo random estándar.
+```
 
-Gestión de Correos
-Mediante peticiones GET a la API de 1secmail, el script solicita una dirección aleatoria. El usuario puede visualizar los mensajes recibidos directamente desde la interfaz, facilitando registros rápidos sin exponer su correo personal.
+---
 
-👤 Autor
-Francisco Villa - Villata-dev
-Desarrollador de Software enfocado en Ciberseguridad y Soluciones Eficientes.
+## Servidor Web
+
+Inicia el servidor Flask.
+
+```bash
+python app.py
+```
+
+La aplicación estará disponible en:
+
+```
+http://127.0.0.1:5000
+```
+
+---
+
+# Autor
+
+**Francisco Villa** *(Villata-dev)*
+
+Desarrollo de Software e Ingeniería de Seguridad.
