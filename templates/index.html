@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EphemeralKey | Web Suite</title>
+    <style>
+        :root {
+            --bg-color: #0B0E14;
+            --glass-bg: rgba(21, 26, 34, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #8B5CF6;
+            --cyan: #00E5FF;
+            --green: #10B981;
+            --text-main: #E5E7EB;
+            --text-muted: #6B7280;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1a1625, transparent 40%),
+                              radial-gradient(circle at bottom left, #0d1a20, transparent 40%);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { color: var(--accent); margin: 0; font-size: 2.5rem; text-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
+        .header p { color: var(--text-muted); margin-top: 0.5rem; }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title { color: var(--cyan); margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
+        .panel-title.green { color: var(--green); }
+
+        .input-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        input[type="text"] {
+            flex: 1;
+            background: #0F1219;
+            border: 1px solid #374151;
+            color: var(--text-main);
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.8rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            transition: all 0.2s;
+        }
+        
+        button:hover { background: rgba(139, 92, 246, 0.1); }
+        button.btn-cyan { border-color: var(--cyan); color: var(--cyan); }
+        button.btn-cyan:hover { background: rgba(0, 229, 255, 0.1); }
+        button.btn-green { border-color: var(--green); color: var(--green); }
+        button.btn-green:hover { background: rgba(16, 185, 129, 0.1); }
+
+        .inbox-console {
+            background: #090B10;
+            border: 1px solid #2A3241;
+            border-radius: 4px;
+            height: 250px;
+            overflow-y: auto;
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #D1D5DB;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+        }
+
+        .status { text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>[ 🔑 EPHEMERAL-KEY ]</h1>
+        <p>WEB PRIVACY SUITE // GLASSMORPHISM UI</p>
+    </div>
+
+    <div class="glass-panel">
+        <h2 class="panel-title">[ CREDENTIAL GENERATOR ]</h2>
+        <div class="input-group">
+            <input type="text" id="password-field" readonly placeholder="Waiting for generation...">
+            <button class="btn-cyan" onclick="generatePassword()">⚡ Gen</button>
+            <button onclick="copyToClipboard('password-field')">📋 Copy</button>
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        <h2 class="panel-title green">[ DISPOSABLE INBOX ]</h2>
+        <div class="input-group">
+            <input type="text" id="email-field" readonly placeholder="Waiting for allocation...">
+            <button class="btn-green" onclick="generateEmail()">🌐 New</button>
+            <button onclick="copyToClipboard('email-field')">📋 Copy</button>
+        </div>
+        
+        <div class="inbox-console" id="inbox">
+            >_ SYSTEM READY. WAITING FOR MAILBOX...
+        </div>
+    </div>
+
+    <div class="status" id="sys-status">SYS_STATUS: READY.</div>
+
+    <script>
+        let currentEmail = "";
+        let knownMails = new Set();
+        let inboxInterval = null;
+
+        const updateStatus = (msg, color = "var(--text-muted)") => {
+            const statusEl = document.getElementById('sys-status');
+            statusEl.innerText = msg;
+            statusEl.style.color = color;
+        };
+
+        const generatePassword = async () => {
+            updateStatus("SYS_STATUS: GENERATING CREDENTIAL...", "var(--cyan)");
+            const res = await fetch('/api/password?length=24');
+            const data = await res.json();
+            document.getElementById('password-field').value = data.password;
+            updateStatus("SYS_STATUS: SECURE CREDENTIAL AQUIRED.", "var(--cyan)");
+        };
+
+        const generateEmail = async () => {
+            updateStatus("SYS_STATUS: NEGOTIATING MAILBOX...", "var(--green)");
+            const res = await fetch('/api/email/new');
+            const data = await res.json();
+            
+            if (data.email) {
+                currentEmail = data.email;
+                document.getElementById('email-field').value = currentEmail;
+                const inbox = document.getElementById('inbox');
+                inbox.innerHTML = `>_ MAILBOX AQUIRED: ${currentEmail}\n>_ Listening for incoming traffic...\n`;
+                updateStatus("SYS_STATUS: INBOX ACTIVE.", "var(--green)");
+                
+                knownMails.clear();
+                if (inboxInterval) clearInterval(inboxInterval);
+                inboxInterval = setInterval(checkInbox, 10000); // Check every 10s
+            }
+        };
+
+        const checkInbox = async () => {
+            if (!currentEmail) return;
+            
+            const res = await fetch(`/api/email/check?email=${currentEmail}`);
+            const messages = await res.json();
+            
+            const inbox = document.getElementById('inbox');
+            
+            for (let msg of messages) {
+                if (!knownMails.has(msg.id)) {
+                    knownMails.add(msg.id);
+                    
+                    // Fetch full message body
+                    const readRes = await fetch(`/api/email/read?email=${currentEmail}&id=${msg.id}`);
+                    const fullMsg = await readRes.json();
+                    
+                    const log = `\n[${msg.date}]\nFROM: ${msg.from}\nSUBJECT: ${msg.subject}\nCONTENT: ${fullMsg.textBody ? fullMsg.textBody.substring(0, 100) : ''}...\n----------------------------------------\n`;
+                    inbox.innerHTML += log;
+                    inbox.scrollTop = inbox.scrollHeight;
+                    updateStatus("SYS_STATUS: NEW MESSAGE INTERCEPTED!", "var(--accent)");
+                }
+            }
+        };
+
+        const copyToClipboard = (elementId) => {
+            const text = document.getElementById(elementId).value;
+            if (text) {
+                navigator.clipboard.writeText(text);
+                updateStatus(`SYS_STATUS: COPIED TO CLIPBOARD.`, "var(--accent)");
+            }
+        };
+
+        // Initialize on load
+        generatePassword();
+    </script>
+</body>
+</html>
