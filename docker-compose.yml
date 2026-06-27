@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ephemeralkey-web:
+    build: .
+    container_name: ephemeralkey_server
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
