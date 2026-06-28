@@ -1,0 +1,6 @@
+site_name: EphemeralKey Documentation
+theme: readthedocs
+nav:
+    - Inicio: index.md
+    - Arquitectura: architecture.md
+    - Despliegue: deployment.md
