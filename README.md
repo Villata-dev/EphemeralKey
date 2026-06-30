@@ -1,107 +1,91 @@
-# EphemeralKey: Suite de Gestión de Identidad y Credenciales
+# EphemeralKey
 
-**EphemeralKey** es una aplicación híbrida de ciberseguridad diseñada para la generación de credenciales criptográficamente seguras y la administración de direcciones de correo electrónico desechables. El sistema implementa características avanzadas de seguridad operativa (OpSec) para mitigar el rastreo y la exposición de datos durante el registro en plataformas de terceros.
+**EphemeralKey** es una plataforma híbrida de ciberseguridad diseñada para la provisión de identidades digitales efímeras. Su arquitectura modular permite la mitigación de huellas de rastreo, la generación de entropía criptográfica de grado militar y la verificación de credenciales comprometidas en bases de datos de dominio público (*Data Breaches*).
 
-El proyecto presenta una arquitectura de despliegue dual, ofreciendo un cliente de escritorio nativo para entornos locales aislados y una interfaz web basada en API REST para despliegues en red.
+El proyecto está diseñado bajo los estándares de **Seguridad Operativa (OpSec)** e incluye múltiples interfaces de interacción:
 
----
-
-## Características Arquitectónicas y de Seguridad
-
-- **Motor Criptográfico**
-  - Generación de contraseñas de alta entropía utilizando el módulo `secrets` de Python, garantizando un nivel de aleatoriedad resistente a ataques de fuerza bruta.
-
-- **Análisis Heurístico en Tiempo Real**
-  - Evaluación dinámica de la fuerza de la contraseña mediante cálculos de entropía de Shannon vinculados a eventos de teclado, proporcionando métricas de seguridad precisas.
-
-- **Monitorización Asíncrona de Bandeja de Entrada**
-  - Integración con la API REST de **1secmail** para el aprovisionamiento de buzones efímeros.
-  - Utiliza hilos de ejecución (`threading`) para el sondeo y recuperación de mensajes entrantes sin bloquear el proceso principal.
-
-- **Protocolos OpSec (Seguridad Operativa)**
-  - **Anti-Hijacking:** purgado automático del portapapeles tras **15 segundos** para prevenir la lectura no autorizada por malware residente.
-  - **Exportación Local:** almacenamiento temporal de identidades efímeras en archivos locales.
-
-- **Arquitectura de Interfaz Dual**
-  - **Desktop Client:** desarrollado con `customtkinter`, ofreciendo una interfaz moderna y optimizada para operaciones locales.
-  - **Web Suite:** servidor **Flask** que expone una API REST consumida por un frontend asíncrono con diseño **Glassmorphism**.
+- Cliente de consola (**Headless CLI**)
+- Aplicación de escritorio nativa
+- Suite web aislada en contenedores
 
 ---
 
-# Stack Tecnológico
+# Especificaciones Técnicas y Arquitectura Core
 
-| Categoría | Tecnología |
-|-----------|------------|
-| Lenguaje Core | Python 3.x |
-| Concurrencia | `threading` |
-| Backend | Flask (API REST) |
-| Frontend Desktop | CustomTkinter |
-| Frontend Web | HTML5, CSS3, JavaScript (Fetch API) |
-| Integración de Red | requests |
+## Módulos de Seguridad y Criptografía
 
----
+### Motor Criptográfico (CSPRNG)
+Generación de credenciales basada en la librería `secrets` del estándar de Python, excluyendo caracteres ambiguos para evitar errores de transcripción.
 
-# Estructura del Repositorio
+### Diceware Passphrases
+Generación de frases de contraseña de alta entropía semántica, resistentes a ataques de diccionario asimétricos.
 
-```text
-EphemeralKey/
-│
-├── app.py                  # Servidor Flask y endpoints REST
-├── gui.py                  # Cliente de escritorio
-├── templates/
-│   └── index.html          # Interfaz web
-├── requirements.txt        # Dependencias del proyecto
-└── README.md
+### k-Anonymity Verification
+Integración con la API de **Have I Been Pwned (HIBP)**.
+
+El sistema:
+
+1. Calcula localmente el hash **SHA-1**.
+2. Envía únicamente los primeros **5 caracteres** del hash.
+3. Verifica filtraciones sin exponer la contraseña completa, garantizando privacidad criptográfica.
+
+### File Shredder
+Algoritmo de destrucción de datos multipasada.
+
+- Sobrescribe la ubicación física de la memoria con bytes aleatorios.
+- Invoca posteriormente la eliminación mediante:
+
+```python
+os.remove()
 ```
 
-> **Nota:** Los módulos de generación y conexión fueron encapsulados directamente en las interfaces para optimizar los flujos de ejecución de la versión actual.
+---
+
+## Protocolos de Protección (OpSec)
+
+### Clipboard Anti-Hijacking
+Rutina de purgado temporizado.
+
+Las credenciales copiadas al portapapeles del sistema operativo se destruyen automáticamente después de **15 segundos**.
+
+### Rate Limiting & Security Headers
+El backend Web (**Flask**) implementa:
+
+- Rate Limiting en memoria.
+- Cabeceras HTTP de seguridad:
+  - `Strict-Transport-Security`
+  - `X-Frame-Options`
+
+Estas medidas ayudan a mitigar:
+
+- Denegación de Servicio (DoS)
+- Clickjacking
+- Diversos vectores de inyección
 
 ---
 
-# Instalación
+# Ecosistema y Despliegue
 
-## 1. Clonar el repositorio
+La plataforma permite implementaciones en distintos entornos según las necesidades operacionales.
+
+## 1. Interfaz de Línea de Comandos (CLI)
+
+Instalación global mediante el paquete Wheel.
+
+Optimizado para scripting en Bash y tuberías (*pipes*).
 
 ```bash
-git clone https://github.com/Villata-dev/EphemeralKey.git
-cd EphemeralKey
+python setup.py install
+
+ephemeralkey --password --length 32
+ephemeralkey --email
 ```
 
 ---
 
-## 2. Crear un entorno virtual
+## 2. Cliente Desktop (Standalone)
 
-Se recomienda utilizar un entorno virtual para aislar las dependencias del proyecto.
-
-### Windows
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
----
-
-## 3. Instalar dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# Ejecución
-
-## Cliente de Escritorio
-
-Ejecuta la interfaz gráfica con las funciones de seguridad a nivel de sistema.
+Desarrollado sobre **CustomTkinter**, proporciona monitoreo asíncrono en tiempo real de la bandeja de entrada mediante **Threading**, evitando el bloqueo de la interfaz principal.
 
 ```bash
 python gui.py
@@ -109,24 +93,54 @@ python gui.py
 
 ---
 
-## Servidor Web
+## 3. Suite Web (Docker)
 
-Inicia el servidor Flask.
+Despliegue orientado a producción mediante **Gunicorn** y **Docker Compose**.
 
 ```bash
-python app.py
-```
-
-La aplicación estará disponible en:
-
-```
-http://127.0.0.1:5000
+docker-compose up --build -d
 ```
 
 ---
 
-# Autor
+# Desarrollo y Control de Calidad
 
-**Francisco Villa** *(Villata-dev)*
+El repositorio sigue prácticas de ingeniería de software orientadas a **CI/CD**.
 
-Desarrollo de Software e Ingeniería de Seguridad.
+## Integración Continua
+
+Flujos de trabajo configurados en:
+
+```text
+.github/workflows/ci.yml
+```
+
+Ejecución automática de pruebas mediante **pytest**.
+
+## Pruebas Unitarias
+
+Cobertura de módulos de red y criptografía ubicada en:
+
+```text
+tests/
+```
+
+Implementación de **Mocking** para evitar llamadas reales a APIs durante los pipelines.
+
+## Estandarización del Código
+
+Configuración respaldada por:
+
+- `.editorconfig`
+- `setup.cfg`
+- Hooks de **pre-commit**
+
+---
+
+# Información del Proyecto
+
+**Arquitecto de Software:** Francisco Villa
+
+**Licencia:** MIT
+
+Consulte el archivo `LICENSE` para más información.
