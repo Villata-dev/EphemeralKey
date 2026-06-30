@@ -1,0 +1,10 @@
+bateria
+caballo
+grapa
+correcto
+seguridad
+efimero
+nube
+terminal
+servidor
+criptografia
